@@ -98,7 +98,7 @@ func (p *peer) OnGossipUnicast(src mesh.PeerName, update []byte) error {
 	return nil
 }
 
-func (p *peer) Set(key, val string, expiredTimestamp int64) {
+func (p *peer) Set(key string, val interface{}, expiredTimestamp int64) {
 	c := make(chan struct{})
 
 	p.actionCh <- func() {
@@ -143,7 +143,7 @@ func (p *peer) Delete(key string, deleteTimestamp int64) bool {
 	return exist
 }
 
-func (p *peer) Get(key string) (string, bool) {
+func (p *peer) Get(key string) (interface{}, bool) {
 	return p.cc.Get(key)
 }
 

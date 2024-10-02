@@ -27,13 +27,13 @@ func newCache(maxKeys int) (*cache, error) {
 
 // value represent cache value
 type value struct {
-	value   string
+	value   interface{}
 	expired int64 // expiration timestamp of the value
 	deleted int64 // deletion timestamp of the value
 }
 
 // Set sets the value of a cache
-func (c *cache) Set(key, val string, expiredTimestamp, deleted int64) {
+func (c *cache) Set(key, val interface{}, expiredTimestamp, deleted int64) {
 	c.cc.Add(key, value{
 		value:   val,
 		expired: expiredTimestamp,
@@ -44,7 +44,7 @@ func (c *cache) Set(key, val string, expiredTimestamp, deleted int64) {
 
 // Delete del the value of a cache.
 // returns true if the key exists in cache, false otherwise
-func (c *cache) Delete(key string, deleteTimestamp int64) (string, int64, bool) {
+func (c *cache) Delete(key string, deleteTimestamp int64) (interface{}, int64, bool) {
 	val, ok := c.get(key)
 	if !ok {
 		return "", 0, false
@@ -65,10 +65,10 @@ func (c *cache) get(key string) (*value, bool) {
 }
 
 // Get gets cache value of the given key
-func (c *cache) Get(key string) (string, bool) {
+func (c *cache) Get(key string) (interface{}, bool) {
 	val, ok := c.get(key)
 	if !ok {
-		return "", false
+		return nil, false
 	}
 
 	now := time.Now().UnixNano()

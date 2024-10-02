@@ -100,7 +100,7 @@ func New(cfg Config) (*Bcache, error) {
 
 // Set sets value for the given key with the given ttl in second.
 // if ttl <= 0, the key will expired instantly
-func (b *Bcache) Set(key, val string, ttl int) {
+func (b *Bcache) Set(key string, val interface{}, ttl int) {
 	if ttl <= 0 {
 		b.Delete(key)
 		return
@@ -108,7 +108,7 @@ func (b *Bcache) Set(key, val string, ttl int) {
 	b.set(key, val, ttl)
 }
 
-func (b *Bcache) set(key, val string, ttl int) int64 {
+func (b *Bcache) set(key string, val interface{}, ttl int) int64 {
 	expired := time.Now().Add(time.Duration(ttl) * time.Second).UnixNano()
 	b.peer.Set(key, val, expired)
 	return expired
@@ -117,12 +117,11 @@ func (b *Bcache) set(key, val string, ttl int) int64 {
 // Get gets value for the given key.
 //
 // It returns the value and true if the key exists
-func (b *Bcache) Get(key string) (string, bool) {
+func (b *Bcache) Get(key string) (interface{}, bool) {
 	return b.peer.Get(key)
 }
 
 // Delete the given key.
-//
 func (b *Bcache) Delete(key string) {
 	deleteTs := time.Now().Add(b.deletionDelay).UnixNano()
 	b.peer.Delete(key, deleteTs)
@@ -139,9 +138,8 @@ type Filler func(key string) (val string, err error)
 // Even there are many goroutines which call `GetWithFiller`, the given `Filler` func
 // will only called once for each of the key.
 //
-//
 // It useful to avoid cache stampede to  the underlying database
-func (b *Bcache) GetWithFiller(key string, filler Filler, ttl int) (string, error) {
+func (b *Bcache) GetWithFiller(key string, filler Filler, ttl int) (interface{}, error) {
 	if filler == nil {
 		return "", ErrNilFiller
 	}
@@ -173,7 +171,7 @@ func (b *Bcache) GetWithFiller(key string, filler Filler, ttl int) (string, erro
 		return flightFn()
 	})
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	// return the value

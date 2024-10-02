@@ -21,7 +21,7 @@ type message struct {
 
 // entry is a single key value entry
 type entry struct {
-	Val     string
+	Val     interface{}
 	Expired int64
 	Deleted int64
 }
@@ -50,7 +50,7 @@ func newMessageFromBuf(b []byte) (*message, error) {
 	return &m, err
 }
 
-func (m *message) add(key, val string, expired, deleted int64) {
+func (m *message) add(key string, val interface{}, expired, deleted int64) {
 	m.mux.Lock()
 	m.Entries[key] = entry{
 		Val:     val,
